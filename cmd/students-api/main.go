@@ -12,6 +12,7 @@ import (
 
 	"github.com/pawanpdn-671/students-api/internal/config"
 	"github.com/pawanpdn-671/students-api/internal/http/handlers/student"
+	"github.com/pawanpdn-671/students-api/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,10 +20,18 @@ func main() {
 	cfg := config.MustLoad()
 
 	// database setup
+	storage, err := sqlite.New(cfg)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("storage initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
+
 	// setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.Create())
+	router.HandleFunc("POST /api/students", student.Create(storage))
 
 	// setup server
 	server := http.Server {
